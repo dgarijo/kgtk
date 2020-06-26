@@ -1,14 +1,28 @@
-FROM python:3.6.10-slim
+FROM continuumio/miniconda3:4.8.2
 
 RUN apt-get update && apt-get install -y \
+  libxdamage-dev \
+  libxcomposite-dev \
+  libxcursor1 \
+  libxfixes3 \
+  libgconf-2-4 \
+  libxi6 \
+  libxrandr-dev \
+  libxinerama-dev\
   gcc \
-  git
+  miller
 
-RUN pip install jupyter
+RUN pip install thinc==7.4.0
 
-RUN git clone https://github.com/usc-isi-i2/kgtk/ --branch feature/lite
+RUN git clone https://github.com/usc-isi-i2/kgtk/ 
 
-RUN cd /kgtk && python setup.py install --lite
+RUN cd /kgtk && python setup.py install 
+
+RUN conda update -n base -c defaults conda
+
+RUN conda install -c conda-forge graph-tool
+
+RUN conda install -c conda-forge jupyterlab
 
 ARG NB_USER=jovyan
 ARG NB_UID=1000
@@ -24,4 +38,5 @@ RUN adduser --disabled-password \
 COPY . ${HOME}
 USER root
 RUN chown -R ${NB_UID} ${HOME}
+RUN chown -R ${NB_UID} kgtk
 USER ${NB_USER}
